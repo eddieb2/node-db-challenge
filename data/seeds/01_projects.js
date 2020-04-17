@@ -18,3 +18,6 @@ exports.seed = function (knex) {
       ]);
     });
 };
+
+// return knex('projects).truncate()
+// .then(- =>  return { knex('projects').insert({seeddata}))

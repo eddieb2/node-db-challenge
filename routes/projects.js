@@ -28,12 +28,18 @@ router.get('/:id', (req, res) => {
 
 // POST PROJECTS
 router.post('/', (req, res) => {
+  const name = req.body.project_name;
+
   Projects.createProject(req.body)
     .then((project) => {
-      res.status(201).json({ message: req.body });
+      if (name === '' || name === undefined) {
+        res.status(400).json({ error: 'Please enter a project name' });
+      } else {
+        res.status(201).json({ message: req.body });
+      }
     })
     .catch((err) => {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Needs a project name property' });
     });
 });
 
@@ -84,15 +90,25 @@ router.get('/:id/resources', (req, res) => {
 
 router.post('/:id/resources', (req, res) => {
   const { id } = req.params;
+  const name = req.body.name;
+
   Projects.getProjectById(id)
     .then((project) => {
       if (project.length > 0) {
         Projects.createResource(req.body)
           .then((task) => {
-            res.status(201).json({ message: req.body });
+            if (name === '' || name === undefined) {
+              res
+                .status(400)
+                .json({ error: 'Please enter a resource name.' });
+            } else {
+              res.status(201).json({ message: req.body });
+            }
           })
           .catch((err) => {
-            res.status(500).json({ error: err.message });
+            res
+              .status(500)
+              .json({ error: 'Needs resource name property' });
           });
       } else {
         res
@@ -103,6 +119,24 @@ router.post('/:id/resources', (req, res) => {
     .catch((err) => {
       res.status(500).json({ error: err.message });
     });
+});
+
+router.get('/:id/all', (req, res) => {
+  const { id } = req.params;
+
+  Projects.getProjectById(id).then((project) => {
+    Projects.getTasks(id).then((tasks) => {
+      Projects.getResources(id).then((resources) => {
+        project[0].tasks = tasks;
+        project[0].resources = resources;
+        res.status(200).json({ project });
+        // OR THIS //
+        // res
+        //   .status(200)
+        //   .json({ message: { ...project[0], tasks, resources } });
+      });
+    });
+  });
 });
 
 module.exports = router;
